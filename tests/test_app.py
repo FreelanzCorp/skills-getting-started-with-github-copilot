@@ -1,17 +1,24 @@
+from urllib.parse import quote
+
 from fastapi.testclient import TestClient
 
 from src.app import app as fastapi_app
 
 
 def test_unregister_participant_removes_their_signup():
+    # Arrange
     client = TestClient(fastapi_app)
+    activity_name = "Chess Club"
+    participant_email = "michael@mergington.edu"
 
+    # Act
     response = client.delete(
-        "/activities/Chess%20Club/participants/michael@mergington.edu"
+        f"/activities/{quote(activity_name)}/participants/{participant_email}"
     )
 
+    # Assert
     assert response.status_code == 200
-    assert "michael@mergington.edu" in response.json()["message"]
+    assert participant_email in response.json()["message"]
 
     activities_response = client.get("/activities")
-    assert "michael@mergington.edu" not in activities_response.json()["Chess Club"]["participants"]
+    assert participant_email not in activities_response.json()[activity_name]["participants"]
